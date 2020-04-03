@@ -55,4 +55,11 @@ public class MyDirectory implements Serializable {
     public void addDirectory(MyDirectory myDirectory) {
         directories.add(myDirectory);
     }
+    public void display()
+    {
+        System.out.println("path :"+path);
+        System.out.println("Directorys :"+directories);
+        System.out.println("files :"+files); 
+    }
+    
 }
