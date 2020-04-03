@@ -113,6 +113,12 @@ public class FileStructure implements Serializable {
         MyDirectory pointer = finedDirectory(root, lastfolder);
         //pointer.display();
         if (pointer != null) {
+            for (int i = 0; i < pointer.getDirectories().size(); i++) {
+                if(path.equals( pointer.getDirectories().get(i).getPath()))
+                {
+                    return false;
+                }
+            }
             pointer.addDirectory(myDirectory);
             // pointer.display();
             return true;
