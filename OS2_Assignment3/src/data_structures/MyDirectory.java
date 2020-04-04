@@ -51,6 +51,10 @@ public class MyDirectory implements Serializable {
     public void addFile(MyFile myFile) {
         files.add(myFile);
     }
+    
+    public void removeFile(int index){
+        files.remove(index);
+    }
 
     public void addDirectory(MyDirectory myDirectory) {
         directories.add(myDirectory);
