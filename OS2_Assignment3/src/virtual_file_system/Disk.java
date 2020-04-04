@@ -53,6 +53,14 @@ public class Disk implements Serializable {
         allocatedBlocks += blocks;
     }
     
+    public void subtractAllocatedSpace(int space){
+        allocatedSpace -= space;
+    }
+    
+    public void subtractAllocatedBlocks(int blocks){
+        allocatedBlocks -= blocks;
+    }
+    
     public void displayDisk() {
     	System.out.println();
         System.out.println("Number of blocks in the Disk: " + numberOfBlocks);

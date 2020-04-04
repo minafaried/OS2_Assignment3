@@ -11,385 +11,381 @@ import java.util.Queue;
 
 public class FileStructure implements Serializable {
 
-	private final Disk disk;
-	private final MyDirectory root;
-	private final List<Boolean> bitMap;
-	private final List<MyBlock> blocks;
-	private final String allocationAlgorithm;
+    private final Disk disk;
+    private final MyDirectory root;
+    private final List<Boolean> bitMap;
+    private final List<MyBlock> blocks;
+    private final String allocationAlgorithm;
 
-	public static final String CONTIGUOUS = "Contiguous Allocation.";
-	public static final String INDEXED = "Indexed Allocation.";
+    public static final String CONTIGUOUS = "Contiguous Allocation.";
+    public static final String INDEXED = "Indexed Allocation.";
 
-	public FileStructure(int numberOfBlocks, String allocationAlgorithm) {
-		disk = new Disk(numberOfBlocks);
-		root = new MyDirectory("root");
+    public FileStructure(int numberOfBlocks, String allocationAlgorithm) {
+        disk = new Disk(numberOfBlocks);
+        root = new MyDirectory("root");
 
-		bitMap = new ArrayList<>(numberOfBlocks);
-		for (int i = 0; i < numberOfBlocks; i++) {
-			bitMap.add(false);
-		}
+        bitMap = new ArrayList<>(numberOfBlocks);
+        for (int i = 0; i < numberOfBlocks; i++) {
+            bitMap.add(false);
+        }
 
-		blocks = new ArrayList<>(numberOfBlocks);
-		for (int i = 0; i < numberOfBlocks; i++) {
-			blocks.add(new MyBlock(i));
-		}
+        blocks = new ArrayList<>(numberOfBlocks);
+        for (int i = 0; i < numberOfBlocks; i++) {
+            blocks.add(new MyBlock(i));
+        }
 
-		this.allocationAlgorithm = allocationAlgorithm;
+        this.allocationAlgorithm = allocationAlgorithm;
 
 		// System.out.println(bitMap.size());
-		// System.out.println(blocks.size());
-	}
+        // System.out.println(blocks.size());
+    }
 
-	public boolean createFile(MyFile myFile, int fileSize) {
-		if (allocationAlgorithm.equals(CONTIGUOUS)) {
-			return createFileCont(myFile, fileSize);
-		} else {
-			return createFileIndexed(myFile, fileSize);
-		}
-	}
+    public boolean createFile(MyFile myFile, int fileSize) {
+        if (allocationAlgorithm.equals(CONTIGUOUS)) {
+            return createFileCont(myFile, fileSize);
+        } else {
+            return createFileIndexed(myFile, fileSize);
+        }
+    }
 
-	public boolean createFolder(MyDirectory myDirectory) {
-		String path = myDirectory.getPath();
-		String patharr[] = path.split("/");
-		String lastfolder = "root";
-		for (int i = 1; i < patharr.length - 1; i++) {
-			lastfolder += "/" + patharr[i];
-		}
-		System.out.println(lastfolder);
-		MyDirectory pointer = findDirectory(root, lastfolder);
-		if (pointer != null) {
-			for (int i = 0; i < pointer.getDirectories().size(); i++) {
-				if (path.equals(pointer.getDirectories().get(i).getPath())) {
-					return false;
-				}
-			}
-			pointer.addDirectory(myDirectory);
-			// pointer.display();
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public boolean createFolder(MyDirectory myDirectory) {
+        String path = myDirectory.getPath();
+        String patharr[] = path.split("/");
+        String lastfolder = "root";
+        for (int i = 1; i < patharr.length - 1; i++) {
+            lastfolder += "/" + patharr[i];
+        }
+        System.out.println(lastfolder);
+        MyDirectory pointer = findDirectory(root, lastfolder);
+        if (pointer != null) {
+            for (int i = 0; i < pointer.getDirectories().size(); i++) {
+                if (path.equals(pointer.getDirectories().get(i).getPath())) {
+                    return false;
+                }
+            }
+            pointer.addDirectory(myDirectory);
+            // pointer.display();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	public boolean deleteFile(MyFile myFile) {
-		if (allocationAlgorithm.equals(CONTIGUOUS)) {
-			return deleteFileCont(myFile);
-		} else {
-			return deleteFileIndexed(myFile);
-		}
-	}
+    public boolean deleteFile(MyFile myFile) {
+        if (allocationAlgorithm.equals(CONTIGUOUS)) {
+            return deleteFileCont(myFile);
+        } else {
+            return deleteFileIndexed(myFile);
+        }
+    }
 
-	public boolean deleteFolder(MyDirectory myDirectory) {
-		String path = myDirectory.getPath();
-		String patharr[] = path.split("/");
-		String parentFolder = "root";
-		for (int i = 1; i < patharr.length - 1; i++) {
-			parentFolder += "/" + patharr[i];
-		}
-		MyDirectory parentFolderPointer = findDirectory(root, parentFolder);
+    public boolean deleteFolder(MyDirectory myDirectory) {
+        String path = myDirectory.getPath();
+        String patharr[] = path.split("/");
+        String parentFolder = "root";
+        for (int i = 1; i < patharr.length - 1; i++) {
+            parentFolder += "/" + patharr[i];
+        }
+        MyDirectory parentFolderPointer = findDirectory(root, parentFolder);
+        //parentFolder.display();
+        if (parentFolderPointer == null) {
+            return false;
+        }
+        MyDirectory folderpointer = null;
+        for (int i = 0; i < parentFolderPointer.getDirectories().size(); i++) {
+            if (path.equals(parentFolderPointer.getDirectories().get(i).getPath())) {
+                folderpointer = parentFolderPointer.getDirectories().get(i);
+            }
+        }
+        if (folderpointer == null) {
+            return false;
+        }
 		//parentFolder.display();
-		if(parentFolderPointer==null)
-		{
-			return false;
-		}
-		MyDirectory folderpointer = null;
-		for (int i = 0; i < parentFolderPointer.getDirectories().size(); i++) {
-			if (path.equals(parentFolderPointer.getDirectories().get(i).getPath())) {
-				folderpointer = parentFolderPointer.getDirectories().get(i);
-			}
-		}
-		if(folderpointer==null)
-		{
-			return false;
-		}
-		//parentFolder.display();
-		//folderpointer.display();
-		deleteFolderUtil(parentFolderPointer, folderpointer,allocationAlgorithm);
-		// pointer.display();
-		return true;
-	}
+        //folderpointer.display();
+        deleteFolderUtil(parentFolderPointer, folderpointer, allocationAlgorithm);
+        // pointer.display();
+        return true;
+    }
 
-	public void displayFileStrucutre() {
+    public void displayFileStrucutre() {
 
-		Queue<MyDirectory> queue = new LinkedList<>();
-		queue.add(this.root);
+        Queue<MyDirectory> queue = new LinkedList<>();
+        queue.add(this.root);
 
-		while (!queue.isEmpty()) {
-			List<MyDirectory> currentLevel = new ArrayList<MyDirectory>();
-			currentLevel.addAll(queue);
-			queue.clear();
+        while (!queue.isEmpty()) {
+            List<MyDirectory> currentLevel = new ArrayList<MyDirectory>();
+            currentLevel.addAll(queue);
+            queue.clear();
 
-			for (MyDirectory myDirectory : currentLevel) {
+            for (MyDirectory myDirectory : currentLevel) {
 
-				System.out.print("<" + myDirectory.getPath() + "> ");
+                System.out.print("<" + myDirectory.getPath() + "> ");
 
-				for (int i = 0; i < myDirectory.getFiles().size(); i++) {
+                for (int i = 0; i < myDirectory.getFiles().size(); i++) {
 
-					System.out.print(myDirectory.getFiles().get(i).getPath() + " ");
-				}
+                    System.out.print(myDirectory.getFiles().get(i).getPath() + " ");
+                }
 
-				for (int i = 0; i < myDirectory.getDirectories().size(); i++) {
-					queue.add(myDirectory.getDirectories().get(i));
-				}
+                for (int i = 0; i < myDirectory.getDirectories().size(); i++) {
+                    queue.add(myDirectory.getDirectories().get(i));
+                }
 
-			}
+            }
 
-			System.out.println();
-		}
+            System.out.println();
+        }
 
-	}
+    }
 
-	public void displayDiskStatus() {
-		disk.displayDisk();
-	}
+    public void displayDiskStatus() {
+        disk.displayDisk();
+    }
 
-	public boolean checkFileExistence(MyDirectory pointer, MyFile myFile) {
-		for (int i = 0; i < pointer.getFiles().size(); i++) {
-			if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
-				return false;
-			}
-		}
-		return true;
-	}
+    public boolean checkFileExistence(MyDirectory pointer, MyFile myFile) {
+        for (int i = 0; i < pointer.getFiles().size(); i++) {
+            if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private boolean createFileCont(MyFile myFile, int fileSize) {
-		/*
-		 * Pre-requests: 1- The path is already exist 2- No file with the same name is
-		 * already created under this path 3- Enough space exists
-		 */
+    private boolean createFileCont(MyFile myFile, int fileSize) {
+        /*
+         * Pre-requests:
+                1- The path is already exist 
+                2- No file with the same name is already created under this path 
+                3- Enough space exists
+         */
 
-		// Check if there is an enough space for the file
-		boolean foundStart = false, enoughSpace = false;
-		int startIndex = -1, foundSize = 0;
-		for (int i = 0; i < blocks.size(); i++) {
-			if (foundStart == false && bitMap.get(i).equals(false)) {
-				foundStart = true;
-				startIndex = i;
-				foundSize += 1;
-			} else if (bitMap.get(i).equals(false)) {
-				foundSize += 1;
-			} else {
-				startIndex = -1;
-				foundSize = 0;
-			}
-			if (foundSize == fileSize) {
-				enoughSpace = true;
-				break;
-			}
-		}
+        // Check if there is an enough space for the file
+        boolean foundStart = false, enoughSpace = false;
+        int startIndex = -1, foundSize = 0;
+        for (int i = 0; i < blocks.size(); i++) {
+            if (foundStart == false && bitMap.get(i).equals(false)) {
+                foundStart = true;
+                startIndex = i;
+                foundSize += 1;
+            } else if (bitMap.get(i).equals(false)) {
+                foundSize += 1;
+            } else {
+                startIndex = -1;
+                foundSize = 0;
+            }
+            if (foundSize == fileSize) {
+                enoughSpace = true;
+                break;
+            }
+        }
 
-		// Check if the path exists and if the file exists
-		String[] pathArray = myFile.getPath().split("/");
-		String lastfolder = "root";
-		boolean pathNotExists = false, fileNotExists = true;
-		for (int i = 1; i < pathArray.length - 1; i++) {
-			lastfolder += "/" + pathArray[i];
-		}
-		MyDirectory pointer = findDirectory(root, lastfolder);
-		if (pointer != null) {
-			pathNotExists = true;
-			fileNotExists = checkFileExistence(pointer, myFile);
-		}
+        // Check if the path exists and if the file exists
+        String[] pathArray = myFile.getPath().split("/");
+        String lastfolder = "root";
+        boolean pathExists = false, fileNotExists = true;
+        for (int i = 1; i < pathArray.length - 1; i++) {
+            lastfolder += "/" + pathArray[i];
+        }
+        MyDirectory pointer = findDirectory(root, lastfolder);
+        if (pointer != null) {
+            pathExists = true;
+            fileNotExists = checkFileExistence(pointer, myFile);
+        }
 
-		// if the Pre-requests are true
-		if (enoughSpace && pathNotExists && fileNotExists) {
-			myFile.setAllocatedBlock(startIndex);
-			pointer.addFile(myFile);
-			List<Integer> Data = new ArrayList<Integer>();
-			Data.add(fileSize);
-			bitMap.set(startIndex, true);
-			blocks.get(startIndex).setData(Data);
-			blocks.get(startIndex).setIndex(startIndex);
-			for (int i = startIndex + 1; i < fileSize + startIndex; i++) {
-				bitMap.set(i, true);
-				blocks.get(i).setData(null);
-				blocks.get(i).setIndex(i);
-			}
-			disk.addToAllocatedBlocks(fileSize);
-			disk.addToAllocatedSpace(fileSize);
-		} else {
-			return false;
-		}
+        // if the Pre-requests are true
+        if (enoughSpace && pathExists && fileNotExists) {
+            myFile.setAllocatedBlock(startIndex);
+            pointer.addFile(myFile);
+            List<Integer> Data = new ArrayList<Integer>();
+            Data.add(fileSize);
+            bitMap.set(startIndex, true);
+            blocks.get(startIndex).setData(Data);
+            blocks.get(startIndex).setIndex(startIndex);
+            for (int i = startIndex + 1; i < fileSize + startIndex; i++) {
+                bitMap.set(i, true);
+                blocks.get(i).setData(null);
+                blocks.get(i).setIndex(i);
+            }
+            disk.addToAllocatedBlocks(fileSize);
+            disk.addToAllocatedSpace(fileSize);
+        } else {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private boolean createFileIndexed(MyFile myFile, int fileSize) {
-		/*
-		 * Pre-requests: 1- The path is already exist 2- No file with the same name is
-		 * already created under this path 3- Enough space exists
-		 */
+    private boolean createFileIndexed(MyFile myFile, int fileSize) {
+        /*
+         * Pre-requests: 1- The path is already exist 2- No file with the same name is
+         * already created under this path 3- Enough space exists
+         */
 
-		// Check if there is an enough space for the file
-		boolean enoughSpace = false;
-		int startIndex = -1, foundSize = 0;
-		List<Integer> Indexes = new ArrayList<Integer>();
-		for (int i = 0; i < blocks.size(); i++) {
-			if (startIndex == -1 && bitMap.get(i).equals(false)) {
-				startIndex = i;
-				foundSize += 1;
-			} else if (bitMap.get(i).equals(false)) {
-				foundSize += 1;
-				Indexes.add(i);
-			}
-			if (foundSize == fileSize) {
-				enoughSpace = true;
-			}
-		}
+        // Check if there is an enough space for the file
+        boolean enoughSpace = false;
+        int startIndex = -1, foundSize = 0;
+        List<Integer> Indexes = new ArrayList<Integer>();
+        for (int i = 0; i < blocks.size(); i++) {
+            if (startIndex == -1 && bitMap.get(i).equals(false)) {
+                startIndex = i;
+            } else if (bitMap.get(i).equals(false)) {
+                foundSize += 1;
+                Indexes.add(i);
+            }
+            if (foundSize == fileSize) {
+                enoughSpace = true;
+                break;
+            }
+        }
 
-		// Check if the path exists and if the file exists
-		String[] pathArray = myFile.getPath().split("/");
-		String lastfolder = "root";
-		boolean pathNotExists = false, fileNotExists = true;
-		for (int i = 1; i < pathArray.length - 1; i++) {
-			lastfolder += "/" + pathArray[i];
-		}
-		MyDirectory pointer = findDirectory(root, lastfolder);
-		if (pointer != null) {
-			pathNotExists = true;
-			fileNotExists = checkFileExistence(pointer, myFile);
-		}
+        // Check if the path exists and if the file exists
+        String[] pathArray = myFile.getPath().split("/");
+        String lastfolder = "root";
+        boolean pathNotExists = false, fileNotExists = true;
+        for (int i = 1; i < pathArray.length - 1; i++) {
+            lastfolder += "/" + pathArray[i];
+        }
+        MyDirectory pointer = findDirectory(root, lastfolder);
+        if (pointer != null) {
+            pathNotExists = true;
+            fileNotExists = checkFileExistence(pointer, myFile);
+        }
 
-		if (enoughSpace && pathNotExists && fileNotExists) {
-			pointer.addFile(myFile);
-			myFile.setAllocatedBlock(startIndex);
-			bitMap.set(startIndex, true);
-			blocks.get(startIndex).setData(Indexes);
-			blocks.get(startIndex).setIndex(startIndex);
+        if (enoughSpace && pathNotExists && fileNotExists) {
+            pointer.addFile(myFile);
+            myFile.setAllocatedBlock(startIndex);
+            bitMap.set(startIndex, true);
+            blocks.get(startIndex).setData(Indexes);
+            blocks.get(startIndex).setIndex(startIndex);
 
-			for (int i = 0; i < Indexes.size(); i++) {
-				bitMap.set(Indexes.get(i), true);
-				blocks.get(Indexes.get(i)).setData(null);
-				blocks.get(Indexes.get(i)).setIndex(Indexes.get(i));
-			}
-			disk.addToAllocatedBlocks(fileSize);
-			disk.addToAllocatedSpace(fileSize);
-		} else {
-			return false;
-		}
+            for (int i = 0; i < Indexes.size(); i++) {
+                bitMap.set(Indexes.get(i), true);
+                blocks.get(Indexes.get(i)).setData(null);
+                blocks.get(Indexes.get(i)).setIndex(Indexes.get(i));
+            }
+            disk.addToAllocatedBlocks(fileSize+1);
+            disk.addToAllocatedSpace(fileSize+1);
+        } else {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private MyDirectory findDirectory(MyDirectory root, String lastfolder) {
-		if (root.getPath().equals(lastfolder)) {
-			return root;
-		}
-		if (root.getDirectories().isEmpty()) {
-			return null;
-		}
+    private MyDirectory findDirectory(MyDirectory root, String lastfolder) {
+        if (root.getPath().equals(lastfolder)) {
+            return root;
+        }
+        if (root.getDirectories().isEmpty()) {
+            return null;
+        }
 
-		for (int i = 0; i < root.getDirectories().size(); i++) {
-			MyDirectory d = findDirectory(root.getDirectories().get(i), lastfolder);
-			if (d != null) {
-				return d;
-			}
-		}
-		return null;
-	}
+        for (int i = 0; i < root.getDirectories().size(); i++) {
+            MyDirectory d = findDirectory(root.getDirectories().get(i), lastfolder);
+            if (d != null) {
+                return d;
+            }
+        }
+        return null;
+    }
 
 //CreateFolder root/faried/f1
+    private boolean deleteFileCont(MyFile myFile) {
+        // Check if the path exists and if the file exists
+        String[] pathArray = myFile.getPath().split("/");
+        String lastfolder = "root";
+        boolean pathNotExists = false, fileNotExists = true;
+        for (int i = 1; i < pathArray.length - 1; i++) {
+            lastfolder += "/" + pathArray[i];
+        }
+        MyDirectory pointer = findDirectory(root, lastfolder);
+        if (pointer != null) {
+            pathNotExists = true;
+            fileNotExists = checkFileExistence(pointer, myFile);
+        }
 
+        int index = -1;
+        int startIndex = -1, fileSize = 0;
+        List<Integer> data = new ArrayList<Integer>();
+        if (pathNotExists && !fileNotExists) {
+            for (int i = 0; i < pointer.getFiles().size(); i++) {
+                if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
+                    index = i;
+                    break;
+                }
+            }
+            startIndex = pointer.getFiles().get(index).getAllocatedBlock();
+            data = blocks.get(index).getData();
+            fileSize = data.get(0);
+            for (int i = startIndex; i < fileSize + startIndex; i++) {
+                bitMap.set(i, false);
+            }
+            pointer.removeFile(index);
+            int subtractSize = -(fileSize);
+            disk.addToAllocatedBlocks(subtractSize);
+            disk.addToAllocatedSpace(subtractSize);
+        } else {
+            return false;
+        }
+        return true;
+    }
 
+    private boolean deleteFileIndexed(MyFile myFile) {
 
-	private boolean deleteFileCont(MyFile myFile) {
-		// Check if the path exists and if the file exists
-		String[] pathArray = myFile.getPath().split("/");
-		String lastfolder = "root";
-		boolean pathNotExists = false, fileNotExists = true;
-		for (int i = 1; i < pathArray.length - 1; i++) {
-			lastfolder += "/" + pathArray[i];
-		}
-		MyDirectory pointer = findDirectory(root, lastfolder);
-		if (pointer != null) {
-			pathNotExists = true;
-			fileNotExists = checkFileExistence(pointer, myFile);
-		}
+        // Check if the path exists and if the file exists
+        String[] pathArray = myFile.getPath().split("/");
+        String lastfolder = "root";
+        boolean pathNotExists = false, fileNotExists = true;
+        for (int i = 1; i < pathArray.length - 1; i++) {
+            lastfolder += "/" + pathArray[i];
+        }
+        MyDirectory pointer = findDirectory(root, lastfolder);
+        if (pointer != null) {
+            pathNotExists = true;
+            fileNotExists = checkFileExistence(pointer, myFile);
+        }
 
-		int index = -1;
-		int startIndex = -1, fileSize = 0;
-		List<Integer> data =  new ArrayList<Integer>();
-		if (pathNotExists && !fileNotExists) {
-			for (int i = 0; i < pointer.getFiles().size(); i++) {
-				if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
-					index = i;
-					break;
-				}
-			}
-			startIndex = pointer.getFiles().get(index).getAllocatedBlock();
-			data = blocks.get(index).getData();
-			fileSize = data.get(0);
-			for (int i = startIndex; i < fileSize + startIndex; i++) {
-				bitMap.set(i, false);
-			}
-			pointer.removeFile(index);
-			int subtractSize = -(fileSize);
-			disk.addToAllocatedBlocks(subtractSize);
-			disk.addToAllocatedSpace(subtractSize);
-		} else {
-			return false;
-		}
-		return true;
-	}
+        int index = -1;
+        int startIndex = -1;
+        List<Integer> data = new ArrayList<Integer>();
 
-	private boolean deleteFileIndexed(MyFile myFile) {
+        if (pathNotExists && !fileNotExists) {
+            for (int i = 0; i < pointer.getFiles().size(); i++) {
+                if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
+                    index = i;
+                    break;
+                }
+            }
+            startIndex = pointer.getFiles().get(index).getAllocatedBlock();
+            data = blocks.get(startIndex).getData();
+            for (int i = 0; i < data.size(); i++) {
+                bitMap.set(data.get(i), false);
+            }
+            pointer.removeFile(index);
+            int size = data.size() + 1;
+            disk.subtractAllocatedSpace(size);
+            disk.subtractAllocatedBlocks(size);
+        } else {
+            return false;
+        }
+        return true;
+    }
 
-		// Check if the path exists and if the file exists
-		String[] pathArray = myFile.getPath().split("/");
-		String lastfolder = "root";
-		boolean pathNotExists = false, fileNotExists = true;
-		for (int i = 1; i < pathArray.length - 1; i++) {
-			lastfolder += "/" + pathArray[i];
-		}
-		MyDirectory pointer = findDirectory(root, lastfolder);
-		if (pointer != null) {
-			pathNotExists = true;
-			fileNotExists = checkFileExistence(pointer, myFile);
-		}
+    private void deleteFolderUtil(MyDirectory root, MyDirectory deletedFolder, String type) {
 
-		int index = -1;
-		int startIndex = -1;
-		List<Integer> data =  new ArrayList<Integer>();
+        if (deletedFolder.getDirectories().isEmpty()) {
+            for (int i = 0; i < deletedFolder.getFiles().size(); i++) {
+                if (type.equals(FileStructure.CONTIGUOUS)) {
+                    deleteFileCont(deletedFolder.getFiles().get(i));
+                } else {
+                    deleteFileIndexed(deletedFolder.getFiles().get(i));
+                }
 
-		if (pathNotExists && !fileNotExists) {
-			for (int i = 0; i < pointer.getFiles().size(); i++) {
-				if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
-					index = i;
-					break;
-				}
-			}
-			startIndex = pointer.getFiles().get(index).getAllocatedBlock();
-			data = blocks.get(startIndex).getData();
-			for (int i = 0; i < data.size(); i++) {
-				bitMap.set(data.get(i), false);
-			}
-			pointer.removeFile(index);
-			int subtractSize = -(data.size() + 1);
-			disk.addToAllocatedBlocks(subtractSize);
-			disk.addToAllocatedSpace(subtractSize);
-		} else {
-			return false;
-		}
-		return true;
-	}
-
-	private void deleteFolderUtil(MyDirectory root, MyDirectory deletedFolder, String type) {
-
-		if (deletedFolder.getDirectories().isEmpty()) {
-			for (int i = 0; i < deletedFolder.getFiles().size(); i++) {
-				if (type.equals(FileStructure.CONTIGUOUS)) {
-					deleteFileCont(deletedFolder.getFiles().get(i));
-				} else {
-					deleteFileIndexed(deletedFolder.getFiles().get(i));
-				}
-
-			}
-		}
-		else {
-			for (int i = 0; i < deletedFolder.getDirectories().size(); i++) {
-				deleteFolderUtil(deletedFolder, deletedFolder.getDirectories().get(i), type);
-			}
-		}
-		root.getDirectories().remove(deletedFolder);
-	}
+            }
+        } else {
+            for (int i = 0; i < deletedFolder.getDirectories().size(); i++) {
+                deleteFolderUtil(deletedFolder, deletedFolder.getDirectories().get(i), type);
+            }
+        }
+        root.getDirectories().remove(deletedFolder);
+    }
 }
