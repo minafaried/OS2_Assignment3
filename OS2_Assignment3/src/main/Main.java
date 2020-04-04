@@ -54,7 +54,7 @@ public class Main {
                     result = fileStrucutre.deleteFolder(new MyDirectory(folderPath));
                 } else if (operation.equals("DisplayDiskStatus")) {
                     fileStrucutre.displayDiskStatus();
-                } else if (operation.equals("DisplayDiskStructure.")) {
+                } else if (operation.equals("DisplayDiskStructure")) {
                     fileStrucutre.displayFileStrucutre();
                 } else {
                     break;
