@@ -54,6 +54,11 @@ public class Disk implements Serializable {
     }
     
     public void displayDisk() {
-        
+    	System.out.println();
+        System.out.println("Number of blocks in the Disk: " + numberOfBlocks);
+        System.out.println("Total Space of the Disk: " + totalSpace);
+        System.out.println("Space allocated in the Disk: " + allocatedSpace);
+        System.out.println("Blocks allocated in the Disk: " + allocatedBlocks);
+        System.out.println();
     }
 }
