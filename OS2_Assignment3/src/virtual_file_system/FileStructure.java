@@ -36,8 +36,6 @@ public class FileStructure implements Serializable {
 
         this.allocationAlgorithm = allocationAlgorithm;
 
-		// System.out.println(bitMap.size());
-        // System.out.println(blocks.size());
     }
 
     public boolean createFile(MyFile myFile, int fileSize) {
@@ -55,7 +53,6 @@ public class FileStructure implements Serializable {
         for (int i = 1; i < patharr.length - 1; i++) {
             lastfolder += "/" + patharr[i];
         }
-        System.out.println(lastfolder);
         MyDirectory pointer = findDirectory(root, lastfolder);
         if (pointer != null) {
             for (int i = 0; i < pointer.getDirectories().size(); i++) {
@@ -64,7 +61,6 @@ public class FileStructure implements Serializable {
                 }
             }
             pointer.addDirectory(myDirectory);
-            // pointer.display();
             return true;
         } else {
             return false;
@@ -87,7 +83,6 @@ public class FileStructure implements Serializable {
             parentFolder += "/" + patharr[i];
         }
         MyDirectory parentFolderPointer = findDirectory(root, parentFolder);
-        //parentFolder.display();
         if (parentFolderPointer == null) {
             return false;
         }
@@ -100,10 +95,7 @@ public class FileStructure implements Serializable {
         if (folderpointer == null) {
             return false;
         }
-		//parentFolder.display();
-        //folderpointer.display();
         deleteFolderUtil(parentFolderPointer, folderpointer, allocationAlgorithm);
-        // pointer.display();
         return true;
     }
 
@@ -153,9 +145,9 @@ public class FileStructure implements Serializable {
     private boolean createFileCont(MyFile myFile, int fileSize) {
         /*
          * Pre-requests:
-                1- The path is already exist 
-                2- No file with the same name is already created under this path 
-                3- Enough space exists
+         1- The path is already exist 
+         2- No file with the same name is already created under this path 
+         3- Enough space exists
          */
 
         // Check if there is an enough space for the file
@@ -194,7 +186,6 @@ public class FileStructure implements Serializable {
         // if the Pre-requests are true
         if (enoughSpace && pathExists && fileNotExists) {
             myFile.setAllocatedBlock(startIndex);
-            pointer.addFile(myFile);
             List<Integer> Data = new ArrayList<Integer>();
             Data.add(fileSize);
             bitMap.set(startIndex, true);
@@ -202,9 +193,8 @@ public class FileStructure implements Serializable {
             blocks.get(startIndex).setIndex(startIndex);
             for (int i = startIndex + 1; i < fileSize + startIndex; i++) {
                 bitMap.set(i, true);
-                blocks.get(i).setData(null);
-                blocks.get(i).setIndex(i);
             }
+            pointer.addFile(myFile);
             disk.addToAllocatedBlocks(fileSize);
             disk.addToAllocatedSpace(fileSize);
         } else {
@@ -216,8 +206,10 @@ public class FileStructure implements Serializable {
 
     private boolean createFileIndexed(MyFile myFile, int fileSize) {
         /*
-         * Pre-requests: 1- The path is already exist 2- No file with the same name is
-         * already created under this path 3- Enough space exists
+         * Pre-requests: 
+        1- The path is already exist 
+        2- No file with the same name is already created under this path 
+        3- Enough space exists
          */
 
         // Check if there is an enough space for the file
@@ -240,30 +232,27 @@ public class FileStructure implements Serializable {
         // Check if the path exists and if the file exists
         String[] pathArray = myFile.getPath().split("/");
         String lastfolder = "root";
-        boolean pathNotExists = false, fileNotExists = true;
+        boolean pathExists = false, fileNotExists = true;
         for (int i = 1; i < pathArray.length - 1; i++) {
             lastfolder += "/" + pathArray[i];
         }
         MyDirectory pointer = findDirectory(root, lastfolder);
         if (pointer != null) {
-            pathNotExists = true;
+            pathExists = true;
             fileNotExists = checkFileExistence(pointer, myFile);
         }
 
-        if (enoughSpace && pathNotExists && fileNotExists) {
-            pointer.addFile(myFile);
+        if (enoughSpace && pathExists && fileNotExists) {
             myFile.setAllocatedBlock(startIndex);
             bitMap.set(startIndex, true);
             blocks.get(startIndex).setData(Indexes);
-            blocks.get(startIndex).setIndex(startIndex);
 
             for (int i = 0; i < Indexes.size(); i++) {
                 bitMap.set(Indexes.get(i), true);
-                blocks.get(Indexes.get(i)).setData(null);
-                blocks.get(Indexes.get(i)).setIndex(Indexes.get(i));
             }
-            disk.addToAllocatedBlocks(fileSize+1);
-            disk.addToAllocatedSpace(fileSize+1);
+            pointer.addFile(myFile);
+            disk.addToAllocatedBlocks(fileSize + 1);
+            disk.addToAllocatedSpace(fileSize + 1);
         } else {
             return false;
         }
@@ -288,41 +277,40 @@ public class FileStructure implements Serializable {
         return null;
     }
 
-//CreateFolder root/faried/f1
     private boolean deleteFileCont(MyFile myFile) {
         // Check if the path exists and if the file exists
         String[] pathArray = myFile.getPath().split("/");
         String lastfolder = "root";
-        boolean pathNotExists = false, fileNotExists = true;
+        boolean pathExists = false, fileNotExists = true;
         for (int i = 1; i < pathArray.length - 1; i++) {
             lastfolder += "/" + pathArray[i];
         }
         MyDirectory pointer = findDirectory(root, lastfolder);
         if (pointer != null) {
-            pathNotExists = true;
+            pathExists = true;
             fileNotExists = checkFileExistence(pointer, myFile);
         }
 
         int index = -1;
         int startIndex = -1, fileSize = 0;
         List<Integer> data = new ArrayList<Integer>();
-        if (pathNotExists && !fileNotExists) {
+        if (pathExists && !fileNotExists) {
             for (int i = 0; i < pointer.getFiles().size(); i++) {
                 if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
                     index = i;
                     break;
                 }
             }
-            startIndex = pointer.getFiles().get(index).getAllocatedBlock();
-            data = blocks.get(index).getData();
+            myFile = pointer.getFiles().get(index);
+            startIndex = myFile.getAllocatedBlock();
+            data = blocks.get(startIndex).getData();
             fileSize = data.get(0);
             for (int i = startIndex; i < fileSize + startIndex; i++) {
                 bitMap.set(i, false);
             }
             pointer.removeFile(index);
-            int subtractSize = -(fileSize);
-            disk.addToAllocatedBlocks(subtractSize);
-            disk.addToAllocatedSpace(subtractSize);
+            disk.subtractAllocatedSpace(fileSize);
+            disk.subtractAllocatedBlocks(fileSize);
         } else {
             return false;
         }
@@ -334,33 +322,34 @@ public class FileStructure implements Serializable {
         // Check if the path exists and if the file exists
         String[] pathArray = myFile.getPath().split("/");
         String lastfolder = "root";
-        boolean pathNotExists = false, fileNotExists = true;
+        boolean pathExists = false, fileNotExists = true;
         for (int i = 1; i < pathArray.length - 1; i++) {
             lastfolder += "/" + pathArray[i];
         }
         MyDirectory pointer = findDirectory(root, lastfolder);
         if (pointer != null) {
-            pathNotExists = true;
+            pathExists = true;
             fileNotExists = checkFileExistence(pointer, myFile);
         }
 
-        int index = -1;
+        int fileIndex = -1;
         int startIndex = -1;
         List<Integer> data = new ArrayList<Integer>();
 
-        if (pathNotExists && !fileNotExists) {
+        if (pathExists && !fileNotExists) {
             for (int i = 0; i < pointer.getFiles().size(); i++) {
                 if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
-                    index = i;
+                    fileIndex = i;
                     break;
                 }
             }
-            startIndex = pointer.getFiles().get(index).getAllocatedBlock();
+            myFile = pointer.getFiles().get(fileIndex);
+            startIndex = myFile.getAllocatedBlock();
             data = blocks.get(startIndex).getData();
             for (int i = 0; i < data.size(); i++) {
                 bitMap.set(data.get(i), false);
             }
-            pointer.removeFile(index);
+            pointer.removeFile(fileIndex);
             int size = data.size() + 1;
             disk.subtractAllocatedSpace(size);
             disk.subtractAllocatedBlocks(size);
@@ -372,19 +361,15 @@ public class FileStructure implements Serializable {
 
     private void deleteFolderUtil(MyDirectory root, MyDirectory deletedFolder, String type) {
 
-        if (deletedFolder.getDirectories().isEmpty()) {
-            for (int i = 0; i < deletedFolder.getFiles().size(); i++) {
-                if (type.equals(FileStructure.CONTIGUOUS)) {
-                    deleteFileCont(deletedFolder.getFiles().get(i));
-                } else {
-                    deleteFileIndexed(deletedFolder.getFiles().get(i));
-                }
-
+        while(!deletedFolder.getFiles().isEmpty()){
+            if (type.equals(FileStructure.CONTIGUOUS)) {
+                deleteFileCont(deletedFolder.getFiles().get(0));
+            } else {
+                deleteFileIndexed(deletedFolder.getFiles().get(0));
             }
-        } else {
-            for (int i = 0; i < deletedFolder.getDirectories().size(); i++) {
-                deleteFolderUtil(deletedFolder, deletedFolder.getDirectories().get(i), type);
-            }
+        }
+        while(!deletedFolder.getDirectories().isEmpty()){
+            deleteFolderUtil(deletedFolder, deletedFolder.getDirectories().get(0), type);
         }
         root.getDirectories().remove(deletedFolder);
     }
