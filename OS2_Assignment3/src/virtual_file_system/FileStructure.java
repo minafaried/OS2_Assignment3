@@ -195,7 +195,7 @@ public class FileStructure implements Serializable {
 		if (enoughSpace && pathNotExists && fileNotExists) {
 			myFile.setAllocatedBlock(startIndex);
 			pointer.addFile(myFile);
-			List<Integer> Data = null;
+			List<Integer> Data = new ArrayList<Integer>();
 			Data.add(fileSize);
 			bitMap.set(startIndex, true);
 			blocks.get(startIndex).setData(Data);
@@ -223,7 +223,7 @@ public class FileStructure implements Serializable {
 		// Check if there is an enough space for the file
 		boolean enoughSpace = false;
 		int startIndex = -1, foundSize = 0;
-		List<Integer> Indexes = null;
+		List<Integer> Indexes = new ArrayList<Integer>();
 		for (int i = 0; i < blocks.size(); i++) {
 			if (startIndex == -1 && bitMap.get(i).equals(false)) {
 				startIndex = i;
@@ -308,7 +308,7 @@ public class FileStructure implements Serializable {
 
 		int index = -1;
 		int startIndex = -1, fileSize = 0;
-		List<Integer> data = null;
+		List<Integer> data =  new ArrayList<Integer>();
 		if (pathNotExists && !fileNotExists) {
 			for (int i = 0; i < pointer.getFiles().size(); i++) {
 				if (pointer.getFiles().get(i).getPath().equals(myFile.getPath())) {
@@ -349,7 +349,7 @@ public class FileStructure implements Serializable {
 
 		int index = -1;
 		int startIndex = -1;
-		List<Integer> data = null;
+		List<Integer> data =  new ArrayList<Integer>();
 
 		if (pathNotExists && !fileNotExists) {
 			for (int i = 0; i < pointer.getFiles().size(); i++) {
@@ -359,7 +359,7 @@ public class FileStructure implements Serializable {
 				}
 			}
 			startIndex = pointer.getFiles().get(index).getAllocatedBlock();
-			data = blocks.get(index).getData();
+			data = blocks.get(startIndex).getData();
 			for (int i = 0; i < data.size(); i++) {
 				bitMap.set(data.get(i), false);
 			}

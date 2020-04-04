@@ -1,6 +1,8 @@
 package data_structures;
 
-public class MyFile {
+import java.io.Serializable;
+
+public class MyFile implements Serializable{
 
     private String path;
     private int allocatedBlock;
