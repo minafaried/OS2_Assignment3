@@ -49,7 +49,9 @@ public class Parser {
 				return commandParts;
 			} else if (commandParts.get(0).equals("DisplayDiskStructure")) {
 				return commandParts;
-			} else {
+			} else if (commandParts.get(0).equals("exit")) {
+				System.exit(0);
+		 }else {
 				return null;
 			}
 		} else {
