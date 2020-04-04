@@ -50,7 +50,7 @@ public class Parser {
 			} else if (commandParts.get(0).equals("DisplayDiskStructure")) {
 				return commandParts;
 			} else if (commandParts.get(0).equals("exit")) {
-				System.exit(0);
+				return commandParts;
 		 }else {
 				return null;
 			}
