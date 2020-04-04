@@ -82,20 +82,29 @@ public class FileStructure implements Serializable {
 	public boolean deleteFolder(MyDirectory myDirectory) {
 		String path = myDirectory.getPath();
 		String patharr[] = path.split("/");
-		String lastfolder = "root";
+		String parentFolder = "root";
 		for (int i = 1; i < patharr.length - 1; i++) {
-			lastfolder += "/" + patharr[i];
+			parentFolder += "/" + patharr[i];
 		}
-		MyDirectory parentFolder = findDirectory(root, lastfolder);
+		MyDirectory parentFolderPointer = findDirectory(root, parentFolder);
+		//parentFolder.display();
+		if(parentFolderPointer==null)
+		{
+			return false;
+		}
 		MyDirectory folderpointer = null;
-		for (int i = 0; i < parentFolder.getDirectories().size(); i++) {
-			if (path.equals(parentFolder.getDirectories().get(i).getPath())) {
-				folderpointer = parentFolder.getDirectories().get(i);
+		for (int i = 0; i < parentFolderPointer.getDirectories().size(); i++) {
+			if (path.equals(parentFolderPointer.getDirectories().get(i).getPath())) {
+				folderpointer = parentFolderPointer.getDirectories().get(i);
 			}
+		}
+		if(folderpointer==null)
+		{
+			return false;
 		}
 		//parentFolder.display();
 		//folderpointer.display();
-		deleteFolderUtil(parentFolder, folderpointer,allocationAlgorithm);
+		deleteFolderUtil(parentFolderPointer, folderpointer,allocationAlgorithm);
 		// pointer.display();
 		return true;
 	}
@@ -364,28 +373,23 @@ public class FileStructure implements Serializable {
 		return true;
 	}
 
-	private void deleteFolderUtil(MyDirectory root, MyDirectory deletedfile, String type) {
+	private void deleteFolderUtil(MyDirectory root, MyDirectory deletedFolder, String type) {
 
-		if (deletedfile.getDirectories().isEmpty()) {
-			for (int i = 0; i < deletedfile.getFiles().size(); i++) {
+		if (deletedFolder.getDirectories().isEmpty()) {
+			for (int i = 0; i < deletedFolder.getFiles().size(); i++) {
 				if (type.equals(FileStructure.CONTIGUOUS)) {
-					deleteFileCont(deletedfile.getFiles().get(i));
+					deleteFileCont(deletedFolder.getFiles().get(i));
 				} else {
-					deleteFileIndexed(deletedfile.getFiles().get(i));
+					deleteFileIndexed(deletedFolder.getFiles().get(i));
 				}
 
 			}
-			root.getDirectories().remove(deletedfile);
-			return;
 		}
-
-		for (int i = 0; i < deletedfile.getDirectories().size(); i++) {
-			deleteFolderUtil(deletedfile, deletedfile.getDirectories().get(i), type);
-
+		else {
+			for (int i = 0; i < deletedFolder.getDirectories().size(); i++) {
+				deleteFolderUtil(deletedFolder, deletedFolder.getDirectories().get(i), type);
+			}
 		}
+		root.getDirectories().remove(deletedFolder);
 	}
-
-
-
-
 }
