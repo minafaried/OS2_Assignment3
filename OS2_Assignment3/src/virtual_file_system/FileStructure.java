@@ -71,7 +71,23 @@ public class FileStructure implements Serializable {
     }
 
     public void displayFileStrucutre() {
-
+    	
+    	Queue<MyDirectory> queue = new LinkedList<>(); 
+        queue.add(this.root); 
+        
+        while (!queue.isEmpty()) {
+        	MyDirectory position = queue.remove();
+        	System.out.println(position);
+        	
+        	for (int i = 0; i < position.getFiles().size(); i++) {
+				System.out.println(position.getFiles().get(i));
+			}
+        	
+        	for (int i = 0; i <  position.getDirectories().size(); i++) {
+				queue.add(position.getDirectories().get(i));
+			}
+        }
+        System.out.println();
     }
 
     public void displayDiskStatus() {
